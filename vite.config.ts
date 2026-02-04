@@ -11,6 +11,15 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
+    // Proxy Angel One API to bypass CORS
+    proxy: {
+      '/api/angelone': {
+        target: 'https://apiconnect.angelbroking.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/angelone/, ''),
+        secure: true,
+      },
+    },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
