@@ -11,6 +11,7 @@ import {
     Globe,
     Zap,
 } from "lucide-react";
+import MainLayout from "@/components/MainLayout";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -312,46 +313,47 @@ export default function NSEDashboard() {
 
     const atmIndex = Math.floor(options.length / 2);
 
-    return (
-        <div className="min-h-screen bg-[#080a0f] text-white">
-            {/* ── Header ── */}
-            <header className="sticky top-0 z-50 border-b border-white/10 bg-[#080a0f]/95 backdrop-blur-xl">
-                <div className="px-6 py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-orange-500 to-rose-600 flex items-center justify-center">
-                            <Globe className="h-4 w-4 text-white" />
-                        </div>
-                        <div>
-                            <h1 className="text-base font-bold bg-gradient-to-r from-orange-400 to-rose-400 bg-clip-text text-transparent">
-                                NSE Bloomberg Terminal
-                            </h1>
-                            <p className="text-[10px] text-zinc-500">Indian Markets · Real-time Intelligence</p>
-                        </div>
-                        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-medium ${backendOnline
-                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                            : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                            }`}>
-                            <div className={`h-1.5 w-1.5 rounded-full ${backendOnline ? "bg-emerald-400 animate-pulse" : "bg-amber-400"}`} />
-                            {backendOnline ? "Backend Live" : "Demo Mode"}
-                        </div>
+    const pageHeader = (
+        <header className="sticky top-0 z-50 border-b border-white/10 bg-[#080a0f]/95 backdrop-blur-xl">
+            <div className="px-6 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-orange-500 to-rose-600 flex items-center justify-center">
+                        <Globe className="h-4 w-4 text-white" />
                     </div>
-                    <div className="flex items-center gap-3">
-                        {lastUpdated && (
-                            <span className="text-[10px] text-zinc-500">Updated: {lastUpdated}</span>
-                        )}
-                        <button
-                            onClick={refresh}
-                            disabled={loading}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 text-zinc-400 text-xs hover:bg-white/10 transition-all disabled:opacity-50"
-                        >
-                            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-                            Refresh
-                        </button>
+                    <div>
+                        <h1 className="text-base font-bold bg-gradient-to-r from-orange-400 to-rose-400 bg-clip-text text-transparent">
+                            NSE Bloomberg Terminal
+                        </h1>
+                        <p className="text-[10px] text-zinc-500">Indian Markets · Real-time Intelligence</p>
+                    </div>
+                    <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-medium ${backendOnline
+                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                        : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                        }`}>
+                        <div className={`h-1.5 w-1.5 rounded-full ${backendOnline ? "bg-emerald-400 animate-pulse" : "bg-amber-400"}`} />
+                        {backendOnline ? "Backend Live" : "Demo Mode"}
                     </div>
                 </div>
-            </header>
+                <div className="flex items-center gap-3">
+                    {lastUpdated && (
+                        <span className="text-[10px] text-zinc-500">Updated: {lastUpdated}</span>
+                    )}
+                    <button
+                        onClick={refresh}
+                        disabled={loading}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 text-zinc-400 text-xs hover:bg-white/10 transition-all disabled:opacity-50"
+                    >
+                        <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        </header>
+    );
 
-            <main className="p-6 space-y-5">
+    return (
+        <MainLayout header={pageHeader}>
+        <div className="p-6 space-y-5 bg-[#080a0f] min-h-full text-white">
 
                 {/* ── VIX + India Risk Banner ── */}
                 <div className="grid grid-cols-4 gap-3">
@@ -489,7 +491,7 @@ export default function NSEDashboard() {
                         )}
                     </div>
                 )}
-            </main>
         </div>
+        </MainLayout>
     );
 }
