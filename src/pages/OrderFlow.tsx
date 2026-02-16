@@ -6,6 +6,8 @@ import LiquidityDOM from "@/components/order-flow/LiquidityDOM";
 import DeltaPanel from "@/components/order-flow/DeltaPanel";
 import { LightweightChart, useChartSync } from "@/components/lightweight-charts";
 import { Activity, Settings2, BarChart2, Layers, ChevronDown, LineChart, SplitSquareVertical, ArrowLeft, Sparkles, FlaskConical, Wifi } from "lucide-react";
+import MainLayout from "@/components/MainLayout";
+import OrderbookTable from "@/components/Orderflow/OrderbookTable";
 
 // Wrapper that provides the context to the page content
 const OrderFlowDashboard = () => {
@@ -28,62 +30,20 @@ const OrderFlowContent = () => {
         return acc;
     }, {} as Record<string, string[]>);
 
-    return (
-        <div className="min-h-screen bg-background text-foreground flex flex-col">
-            {/* Custom Header with Navigation */}
-            <header className="glass-card border-b border-border px-6 py-3">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        {/* Back Navigation */}
-                        <Link
-                            to="/"
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-secondary/50 transition-colors text-muted-foreground hover:text-foreground"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                            <span className="text-sm hidden sm:inline">Dashboard</span>
-                        </Link>
-
-                        <div className="h-8 w-px bg-border/50" />
-
-                        {/* Title */}
-                        <div className="flex items-center gap-3">
-                            <div className="relative">
-                                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 via-teal-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                                    <Activity className="w-4 h-4 text-white" />
-                                </div>
-                                <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-bullish rounded-full live-pulse" />
-                            </div>
-                            <div>
-                                <h1 className="text-lg font-bold tracking-tight">
-                                    <span className="text-glow-cyan">ThinnAIQ</span>{" "}
-                                    <span className="text-primary">OrderFlow</span>
-                                </h1>
-                                <p className="text-xs text-muted-foreground font-mono">
-                                    Footprint • DOM • Delta
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Options Lab Link */}
-                        <Link
-                            to="/options-lab"
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/30 hover:bg-secondary/60 hover:text-primary transition-all border border-border/50 text-xs font-medium text-muted-foreground"
-                        >
-                            <FlaskConical className="w-3.5 h-3.5" />
-                            Options Lab
-                        </Link>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-bullish/10 border border-bullish/30">
-                            <Wifi className="w-3.5 h-3.5 text-bullish" />
-                            <span className="text-xs font-medium text-bullish">LIVE</span>
-                        </div>
-                    </div>
+    const customHeader = (
+        <header className="glass-card border-b border-border px-6 py-3">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-lg font-bold tracking-tight text-foreground">OrderFlow</h1>
+                    <p className="text-xs text-muted-foreground font-mono">Footprint • DOM • Delta</p>
                 </div>
-            </header>
+            </div>
+        </header>
+    );
 
-            <main className="flex-1 p-4 grid grid-cols-12 gap-4 h-[calc(100vh-80px)] overflow-hidden">
+    return (
+        <MainLayout header={customHeader}>
+            <div className="grid grid-cols-12 gap-4 h-full">
                 {/* Top Control Bar */}
                 <div className="col-span-12 glass-card p-3 flex items-center justify-between">
                     <div className="flex items-center gap-6">
@@ -185,12 +145,12 @@ const OrderFlowContent = () => {
                 </div>
 
                 {/* Main Chart Area - Split View when companion is enabled */}
-                <div className={`glass-card p-4 relative overflow-hidden flex flex-col ${showCompanionChart ? 'col-span-6' : 'col-span-9'} md:col-span-${showCompanionChart ? '5' : '8'} lg:col-span-${showCompanionChart ? '6' : '9'} transition-all`}>
+                <div className={`glass-card p-4 relative overflow-hidden flex flex-col ${showCompanionChart ? 'col-span-6' : 'col-span-9'} md:col-span-${showCompanionChart ? '5' : '8'} lg:col-span-${showCompanionChart ? '6' : '9'} transition-all min-h-[500px]`}>
                     <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground uppercase tracking-wider">
                         <BarChart2 className="w-4 h-4" />
                         Footprint Chart
                     </div>
-                    <div className="flex-1 border border-border/30 rounded-lg bg-black/20 relative overflow-hidden">
+                    <div className="flex-1 border border-border/30 rounded-lg bg-black/20 relative overflow-hidden" style={{ height: '450px', maxHeight: '450px' }}>
                         <FootprintChart />
                     </div>
                 </div>
@@ -226,7 +186,7 @@ const OrderFlowContent = () => {
                             <Layers className="w-3 h-3 text-muted-foreground" />
                             <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Liquidity Map</span>
                         </div>
-                        <LiquidityDOM />
+                        <OrderbookTable />
                     </div>
 
                     {/* Delta / Trade Stats Section */}
@@ -240,8 +200,8 @@ const OrderFlowContent = () => {
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </MainLayout>
     );
 };
 

@@ -1,26 +1,22 @@
+/**
+ * FootprintChart - Wrapper for OrderflowChart
+ * Maintains backward compatibility while using new delta-based rendering
+ */
 
-import { useOrderFlow, FootprintCandle } from "@/contexts/OrderFlowContext";
-import ChartCanvas from "../chart/ChartCanvas";
+import { OrderflowChart } from "../Orderflow";
+import { useOrderFlow } from "@/contexts/OrderFlowContext";
 
 const FootprintChart = () => {
-    const { candles, currentCandle, lastPrice, imbalanceRatio } = useOrderFlow();
-
-    // Merge history + current
-    const allCandles = [...candles];
-    if (currentCandle) {
-        allCandles.push(currentCandle);
-    }
+    const { symbol } = useOrderFlow();
 
     return (
         <div className="w-full h-full">
-            <ChartCanvas
-                candles={allCandles}
-                lastPrice={lastPrice}
-                imbalanceRatio={imbalanceRatio}
+            <OrderflowChart
+                symbol={symbol || 'BTCUSDT'}
+                showVolumeProfile={true}
             />
         </div>
     );
 };
 
 export default FootprintChart;
-

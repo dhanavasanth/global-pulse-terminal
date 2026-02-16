@@ -58,7 +58,7 @@ export const MarketOverview = () => {
                         {/* Header */}
                         <div className="flex justify-between items-start mb-2 z-10">
                             <h4 className="font-bold text-sm tracking-wide">{idx.symbol}</h4>
-                            <span className={`text-xs font-bold ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                            <span className={`text-xs font-bold ${isPositive ? 'text-bullish' : 'text-bearish'}`}>
                                 {isPositive ? '+' : ''}{idx.percentChange}%
                             </span>
                         </div>
@@ -86,7 +86,7 @@ export const MarketOverview = () => {
 
                         {/* Price (Overlaying chart slightly) */}
                         <div className="z-10 mt-auto">
-                            <span className={`text-lg font-mono font-bold ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+                            <span className={`text-lg font-mono font-bold ${isPositive ? 'text-bullish' : 'text-bearish'}`}>
                                 {idx.last.toLocaleString()}
                             </span>
                         </div>

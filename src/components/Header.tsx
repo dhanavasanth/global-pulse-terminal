@@ -45,26 +45,9 @@ const Header = ({ onOpenScreener }: HeaderProps) => {
             </div>
           </div>
 
-          {/* Navigation Links */}
+          {/* Navigation Links Removed - Moved to Sidebar */}
           <div className="hidden md:flex items-center gap-2 ml-4 pl-4 border-l border-border/50">
-            <Link
-              to="/options-lab"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border border-purple-500/30 hover:border-primary/50 hover:bg-primary/10 transition-all group"
-            >
-              <FlaskConical className="w-4 h-4 text-purple-400 group-hover:text-primary transition-colors" />
-              <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                Options Lab
-              </span>
-            </Link>
-            <Link
-              to="/order-flow"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-500/10 to-teal-500/10 border border-blue-500/30 hover:border-primary/50 hover:bg-primary/10 transition-all group"
-            >
-              <Activity className="w-4 h-4 text-blue-400 group-hover:text-primary transition-colors" />
-              <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                Order Flow
-              </span>
-            </Link>
+            {/* Empty or minimal placeholder if needed, otherwise removed */}
           </div>
         </div>
 

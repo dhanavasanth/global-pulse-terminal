@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+websockets
+numpy
+pandas
+httpx
+python-dotenv
+scipy
+yfinance
+feedparser
+ollama
+apscheduler
+smartapi-python
+logzero
+pyotp

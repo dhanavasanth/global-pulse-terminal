@@ -1,10 +1,3 @@
-/**
- * SideMenu Component
- * 
- * A collapsible left-side navigation matching the app's design.
- * Shows navigation links with active state indicators.
- */
-
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -14,12 +7,23 @@ import {
     Filter,
     ChevronLeft,
     ChevronRight,
-    Sparkles,
     Settings,
-    HelpCircle,
     Bell,
-    Globe
+    Globe,
+    Search,
+    LogOut,
+    Zap
 } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import logo from '@/assets/logo.png';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface NavItem {
     path: string;
@@ -36,6 +40,16 @@ const navItems: NavItem[] = [
         icon: <LayoutDashboard className="w-5 h-5" />,
     },
     {
+        path: '/stock-atlas',
+        label: 'StockAtlas',
+        icon: <Globe className="w-5 h-5" />,
+    },
+    {
+        path: '/screener',
+        label: 'Screener',
+        icon: <Filter className="w-5 h-5" />,
+    },
+    {
         path: '/options-lab',
         label: 'Options Lab',
         icon: <FlaskConical className="w-5 h-5" />,
@@ -46,11 +60,29 @@ const navItems: NavItem[] = [
         icon: <Activity className="w-5 h-5" />,
     },
     {
+        path: '/autotrade',
+        label: 'AutoTrade AI',
+        icon: <Zap className="w-5 h-5" />,
+    },
+    {
         path: '/market-dashboard',
         label: 'Global Dashboard',
         icon: <Globe className="w-5 h-5" />,
-        badge: 'NEW',
-        badgeColor: 'bg-gradient-to-r from-indigo-500/20 to-purple-500/20 text-indigo-400 border border-indigo-500/30'
+    },
+    {
+        path: '/tasks',
+        label: 'Tasks',
+        icon: <Activity className="w-5 h-5" />,
+    },
+    {
+        path: '/help',
+        label: 'Help',
+        icon: <Bell className="w-5 h-5" />,
+    },
+    {
+        path: '/settings',
+        label: 'Settings',
+        icon: <Settings className="w-5 h-5" />,
     },
 ];
 
@@ -60,105 +92,132 @@ interface SideMenuProps {
     onOpenScreener?: () => void;
 }
 
-export default function SideMenu({ isCollapsed = false, onToggle, onOpenScreener }: SideMenuProps) {
+export default function SideMenu({ isCollapsed: propsCollapsed, onToggle: propsOnToggle }: SideMenuProps) {
     const location = useLocation();
+    const [localCollapsed, setLocalCollapsed] = useState(false);
+
+    const isControlled = propsCollapsed !== undefined && propsOnToggle !== undefined;
+    const isCollapsed = isControlled ? propsCollapsed : localCollapsed;
+
+    const handleToggle = () => {
+        if (isControlled) {
+            propsOnToggle && propsOnToggle();
+        } else {
+            setLocalCollapsed(!localCollapsed);
+        }
+    };
 
     return (
-        <div
-            className={`h-full bg-background/95 backdrop-blur-xl border-r border-border/50 flex flex-col transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-56'
-                }`}
-        >
-            {/* Logo */}
-            <div className="flex items-center gap-2 p-4 border-b border-border/30">
-                <div className="relative flex-shrink-0">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary via-cyan-400 to-blue-600 flex items-center justify-center shadow-lg shadow-primary/30">
-                        <Sparkles className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-bullish rounded-full live-pulse" />
-                </div>
-                {!isCollapsed && (
-                    <div className="overflow-hidden">
-                        <h1 className="text-lg font-bold tracking-tight whitespace-nowrap">
-                            <span className="text-glow-cyan">Thinn</span>
-                            <span className="text-primary">AIQ</span>
-                        </h1>
-                    </div>
-                )}
-            </div>
-
-            {/* Navigation */}
-            <nav className="flex-1 p-2 space-y-1">
-                {navItems.map((item) => {
-                    const isActive = location.pathname === item.path;
-                    return (
-                        <Link
-                            key={item.path}
-                            to={item.path}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all group ${isActive
-                                ? 'bg-primary/20 text-primary border border-primary/30'
-                                : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
-                                }`}
-                            title={isCollapsed ? item.label : undefined}
-                        >
-                            <span className={`flex-shrink-0 ${isActive ? 'text-primary' : 'group-hover:text-primary'}`}>
-                                {item.icon}
-                            </span>
-                            {!isCollapsed && (
-                                <>
-                                    <span className="text-sm font-medium truncate">{item.label}</span>
-                                    {item.badge && (
-                                        <span className={`ml-auto px-1.5 py-0.5 rounded text-[9px] font-medium ${item.badgeColor}`}>
-                                            {item.badge}
-                                        </span>
-                                    )}
-                                </>
-                            )}
-                        </Link>
-                    );
-                })}
-
-                {/* Screener Button */}
-                <button
-                    onClick={onOpenScreener}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-muted-foreground hover:bg-secondary/50 hover:text-foreground group"
-                    title={isCollapsed ? 'Stock Screener' : undefined}
-                >
-                    <Filter className="w-5 h-5 flex-shrink-0 group-hover:text-violet-400" />
-                    {!isCollapsed && (
-                        <span className="text-sm font-medium">Screener</span>
-                    )}
-                </button>
-            </nav>
-
-            {/* Bottom Actions */}
-            <div className="p-2 border-t border-border/30 space-y-1">
-                <button
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-colors"
-                    title={isCollapsed ? 'Notifications' : undefined}
-                >
-                    <Bell className="w-5 h-5 flex-shrink-0" />
-                    {!isCollapsed && <span className="text-sm">Alerts</span>}
-                </button>
-                <button
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-colors"
-                    title={isCollapsed ? 'Settings' : undefined}
-                >
-                    <Settings className="w-5 h-5 flex-shrink-0" />
-                    {!isCollapsed && <span className="text-sm">Settings</span>}
-                </button>
-            </div>
-
-            {/* Collapse Toggle */}
-            <button
-                onClick={onToggle}
-                className="flex items-center justify-center p-2 border-t border-border/30 text-muted-foreground hover:text-foreground hover:bg-secondary/30 transition-colors"
+        <TooltipProvider delayDuration={0}>
+            <div
+                className={`flex flex-col h-screen sticky top-0 bg-background border-r border-border transition-all duration-300 ease-in-out relative flex-shrink-0 z-40 ${isCollapsed ? 'w-20' : 'w-72'
+                    }`}
             >
-                {isCollapsed ? (
-                    <ChevronRight className="w-5 h-5" />
-                ) : (
-                    <ChevronLeft className="w-5 h-5" />
-                )}
-            </button>
-        </div>
+                {/* Logo Section */}
+                <div className={`flex items-center gap-3 p-4 h-16 border-b border-border/40 ${isCollapsed ? 'justify-center' : ''}`}>
+                    <div className="relative flex-shrink-0">
+                        <img
+                            src={logo}
+                            alt="Logo"
+                            className="w-9 h-9 rounded-lg object-cover"
+                        />
+                    </div>
+                    {!isCollapsed && (
+                        <div className="overflow-hidden">
+                            <h1 className="text-base font-bold tracking-tight text-foreground whitespace-nowrap">
+                                Market Terminal
+                            </h1>
+                        </div>
+                    )}
+                </div>
+
+
+
+                {/* Navigation */}
+                <nav className="flex-1 px-4 space-y-2 py-4">
+                    {navItems.map((item) => {
+                        const isActive = location.pathname === item.path;
+                        const LinkContent = (
+                            <Link
+                                to={item.path}
+                                className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all group relative duration-200 ${isActive
+                                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25 font-semibold'
+                                    : 'text-muted-foreground hover:bg-secondary/80 hover:text-foreground hover:shadow-sm'
+                                    } ${isCollapsed ? 'justify-center px-0 w-12 h-12 mx-auto' : ''}`}
+                            >
+                                <span className="flex-shrink-0 relative z-10 w-fit h-fit">
+                                    {item.icon}
+                                </span>
+                                {!isCollapsed && (
+                                    <span className="text-sm tracking-wide">{item.label}</span>
+                                )}
+                            </Link>
+                        );
+
+                        return isCollapsed ? (
+                            <Tooltip key={item.path}>
+                                <TooltipTrigger asChild>
+                                    {LinkContent}
+                                </TooltipTrigger>
+                                <TooltipContent side="right" className="bg-foreground text-background font-medium rounded-xl px-4 py-2 ml-2">
+                                    {item.label}
+                                </TooltipContent>
+                            </Tooltip>
+                        ) : (
+                            <div key={item.path}>{LinkContent}</div>
+                        );
+                    })}
+
+
+                </nav>
+
+                {/* Spacer */}
+                <div className="flex-1" />
+
+                {/* Bottom Section: Profile & Toggle */}
+                <div className="p-4 space-y-4">
+
+                    {/* User Profile */}
+                    <div className={`bg-secondary/30 rounded-3xl p-2 border border-border/30 flex items-center gap-3 ${isCollapsed ? 'justify-center aspect-square' : ''}`}>
+                        <Avatar className="w-10 h-10 border-2 border-background shadow-sm">
+                            <AvatarImage src="https://github.com/shadcn.png" />
+                            <AvatarFallback>JD</AvatarFallback>
+                        </Avatar>
+                        {!isCollapsed && (
+                            <div className="flex-1 overflow-hidden">
+                                <p className="text-sm font-bold text-foreground truncate">John Doe</p>
+                                <p className="text-xs text-muted-foreground truncate">Admin</p>
+                            </div>
+                        )}
+                        {!isCollapsed && (
+                            <button className="p-2 rounded-xl hover:bg-background/80 text-muted-foreground hover:text-foreground transition-colors">
+                                <LogOut className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Theme Toggle - Absolute Bottom Left request */}
+                    <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-2'}`}>
+                        <ThemeToggle />
+                        {!isCollapsed && (
+                            <button
+                                onClick={handleToggle}
+                                className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                                <ChevronLeft className="w-5 h-5" />
+                            </button>
+                        )}
+                    </div>
+                    {isCollapsed && (
+                        <button
+                            onClick={handleToggle}
+                            className="w-full flex items-center justify-center p-2 text-muted-foreground hover:text-foreground transition-colors mt-2"
+                        >
+                            <ChevronRight className="w-5 h-5" />
+                        </button>
+                    )}
+                </div>
+            </div>
+        </TooltipProvider>
     );
 }

@@ -1,11 +1,80 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-
 @layer base {
   :root {
+    /* Light Mode Defaults */
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 190 100% 40%;
+    /* Darker cyan for light mode readability */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 190 100% 45%;
+    --accent-foreground: 222 47% 11%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 190 100% 40%;
+
+    --radius: 0.75rem;
+
+    /* Custom Trading Colors (Adjusted for Light) */
+    --bullish: 155 80% 40%;
+    --bearish: 350 80% 55%;
+    --warning: 35 90% 50%;
+
+    /* Glow Effects (Subtler for Light) */
+    --glow-cyan: 0 0 10px hsl(190 100% 40% / 0.2);
+    --glow-green: 0 0 10px hsl(155 80% 40% / 0.2);
+    --glow-red: 0 0 10px hsl(350 80% 55% / 0.2);
+
+    /* Glassmorphism */
+    --glass-bg: hsl(0 0% 100% / 0.7);
+    --glass-border: hsl(214.3 31.8% 91.4% / 0.5);
+
+    /* Session Colors */
+    --session-asia: 280 60% 50%;
+    --session-london: 45 90% 45%;
+    --session-ny: 190 90% 40%;
+
+    --sidebar-background: 222 47% 11%;
+    /* Keep sidebar dark? Or light? Let's make it light for full switch */
+    --sidebar-foreground: 210 40% 96%;
+    /* Actually, sidebars often stay dark. Let's try full light first. */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 222 47% 11%;
+    --sidebar-primary: 190 100% 40%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 210 40% 96%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 190 100% 40%;
+
+    /* Animation Easing */
+    --expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .dark {
     /* Terminal Dark Theme */
     --background: 220 25% 6%;
     --foreground: 210 40% 96%;
@@ -42,16 +111,16 @@
     --bullish: 155 100% 50%;
     --bearish: 350 100% 60%;
     --warning: 45 100% 55%;
-    
+
     /* Glow Effects */
     --glow-cyan: 0 0 20px hsl(190 100% 50% / 0.4);
     --glow-green: 0 0 20px hsl(155 100% 50% / 0.4);
     --glow-red: 0 0 20px hsl(350 100% 60% / 0.4);
-    
+
     /* Glassmorphism */
     --glass-bg: hsl(220 20% 10% / 0.7);
     --glass-border: hsl(220 20% 25% / 0.5);
-    
+
     /* Session Colors */
     --session-asia: 280 80% 60%;
     --session-london: 45 100% 55%;
@@ -65,6 +134,49 @@
     --sidebar-accent-foreground: 210 40% 90%;
     --sidebar-border: 220 20% 18%;
     --sidebar-ring: 190 100% 50%;
+  }
+
+  /* View Transition Animations */
+  ::view-transition-group(root) {
+    animation-duration: 0.7s;
+    animation-timing-function: var(--expo-out);
+  }
+
+  ::view-transition-new(root) {
+    animation-name: reveal-light;
+    animation-fill-mode: both;
+  }
+
+  ::view-transition-old(root),
+  .dark::view-transition-old(root) {
+    animation: none;
+    animation-fill-mode: both;
+    z-index: -1;
+  }
+
+  .dark::view-transition-new(root) {
+    animation-name: reveal-dark;
+    animation-fill-mode: both;
+  }
+
+  @keyframes reveal-dark {
+    from {
+      clip-path: polygon(50% -71%, -50% 71%, -50% 71%, 50% -71%);
+    }
+
+    to {
+      clip-path: polygon(50% -71%, -50% 71%, 50% 171%, 171% 50%);
+    }
+  }
+
+  @keyframes reveal-light {
+    from {
+      clip-path: polygon(171% 50%, 50% 171%, 50% 171%, 171% 50%);
+    }
+
+    to {
+      clip-path: polygon(171% 50%, 50% 171%, -50% 71%, 50% -71%);
+    }
   }
 }
 
@@ -85,6 +197,7 @@
 }
 
 @layer components {
+
   /* Glassmorphic Card */
   .glass-card {
     @apply relative overflow-hidden rounded-xl;
@@ -97,12 +210,10 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      135deg,
-      hsl(190 100% 50% / 0.05) 0%,
-      transparent 50%,
-      hsl(280 80% 60% / 0.03) 100%
-    );
+    background: linear-gradient(135deg,
+        hsl(190 100% 50% / 0.05) 0%,
+        transparent 50%,
+        hsl(280 80% 60% / 0.03) 100%);
     pointer-events: none;
   }
 
@@ -135,8 +246,13 @@
 
   /* Ticker Animation */
   @keyframes ticker-scroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-50%);
+    }
   }
 
   .ticker-scroll {
@@ -145,8 +261,15 @@
 
   /* Pulse Animation for Live Data */
   @keyframes live-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.5;
+    }
   }
 
   .live-pulse {
@@ -155,13 +278,23 @@
 
   /* Price Flash Animation */
   @keyframes price-flash-up {
-    0% { background-color: hsl(155 100% 50% / 0.3); }
-    100% { background-color: transparent; }
+    0% {
+      background-color: hsl(155 100% 50% / 0.3);
+    }
+
+    100% {
+      background-color: transparent;
+    }
   }
 
   @keyframes price-flash-down {
-    0% { background-color: hsl(350 100% 60% / 0.3); }
-    100% { background-color: transparent; }
+    0% {
+      background-color: hsl(350 100% 60% / 0.3);
+    }
+
+    100% {
+      background-color: transparent;
+    }
   }
 
   .flash-up {
@@ -172,13 +305,7 @@
     animation: price-flash-down 0.5s ease-out;
   }
 
-  /* Grid Lines Background */
-  .grid-bg {
-    background-image: 
-      linear-gradient(hsl(220 20% 15% / 0.5) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(220 20% 15% / 0.5) 1px, transparent 1px);
-    background-size: 50px 50px;
-  }
+
 
   /* Session Indicator */
   .session-active {
