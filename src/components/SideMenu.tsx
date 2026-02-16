@@ -7,12 +7,10 @@ import {
     Filter,
     ChevronLeft,
     ChevronRight,
-    Settings,
-    Bell,
     Globe,
-    Search,
     LogOut,
-    Zap
+    Zap,
+    IndianRupee,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -60,29 +58,23 @@ const navItems: NavItem[] = [
         icon: <Activity className="w-5 h-5" />,
     },
     {
+        path: '/nse-dashboard',
+        label: 'NSE Terminal',
+        icon: <IndianRupee className="w-5 h-5" />,
+        badge: 'NEW',
+        badgeColor: 'bg-orange-500/20 text-orange-400',
+    },
+    {
         path: '/autotrade',
         label: 'AutoTrade AI',
         icon: <Zap className="w-5 h-5" />,
+        badge: 'AI',
+        badgeColor: 'bg-violet-500/20 text-violet-400',
     },
     {
         path: '/market-dashboard',
-        label: 'Global Dashboard',
+        label: 'Global Markets',
         icon: <Globe className="w-5 h-5" />,
-    },
-    {
-        path: '/tasks',
-        label: 'Tasks',
-        icon: <Activity className="w-5 h-5" />,
-    },
-    {
-        path: '/help',
-        label: 'Help',
-        icon: <Bell className="w-5 h-5" />,
-    },
-    {
-        path: '/settings',
-        label: 'Settings',
-        icon: <Settings className="w-5 h-5" />,
     },
 ];
 
@@ -149,7 +141,12 @@ export default function SideMenu({ isCollapsed: propsCollapsed, onToggle: propsO
                                     {item.icon}
                                 </span>
                                 {!isCollapsed && (
-                                    <span className="text-sm tracking-wide">{item.label}</span>
+                                    <span className="text-sm tracking-wide flex-1">{item.label}</span>
+                                )}
+                                {!isCollapsed && item.badge && (
+                                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${item.badgeColor ?? 'bg-zinc-500/20 text-zinc-400'}`}>
+                                        {item.badge}
+                                    </span>
                                 )}
                             </Link>
                         );

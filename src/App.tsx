@@ -13,6 +13,7 @@ import GlobalDashboard from "./pages/GlobalDashboard";
 import StockAtlas from "./pages/StockAtlas";
 import Screener from "./pages/Screener";
 import AutoTrade from "./pages/AutoTrade";
+import NSEDashboard from "./pages/NSEDashboard";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
               <Route path="/stock-atlas" element={<StockAtlas />} />
               <Route path="/screener" element={<Screener />} />
               <Route path="/autotrade" element={<AutoTrade />} />
+              <Route path="/nse-dashboard" element={<NSEDashboard />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
