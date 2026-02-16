@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Component, ReactNode } from "react";
 import {
     Activity,
     TrendingUp,
@@ -12,6 +12,35 @@ import {
     Zap,
 } from "lucide-react";
 import MainLayout from "@/components/MainLayout";
+
+// ─── Error Boundary ───────────────────────────────────────────────────────────
+class ErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
+    constructor(props: { children: ReactNode }) {
+        super(props);
+        this.state = { error: null };
+    }
+    static getDerivedStateFromError(err: Error) {
+        return { error: err.message };
+    }
+    render() {
+        if (this.state.error) {
+            return (
+                <MainLayout>
+                    <div className="flex items-center justify-center min-h-[60vh] text-white">
+                        <div className="text-center space-y-3">
+                            <p className="text-rose-400 text-sm font-medium">NSE Terminal failed to load</p>
+                            <p className="text-zinc-500 text-xs">{this.state.error}</p>
+                            <button onClick={() => this.setState({ error: null })} className="px-4 py-2 rounded-lg bg-white/10 text-xs hover:bg-white/20 transition-colors">
+                                Retry
+                            </button>
+                        </div>
+                    </div>
+                </MainLayout>
+            );
+        }
+        return this.props.children;
+    }
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -51,11 +80,10 @@ interface MarketOverview {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const BASE = "http://localhost:8000";
-
+// Use relative path so Vite dev-proxy (/api → localhost:5001) handles routing
 async function fetchJSON<T>(path: string): Promise<T | null> {
     try {
-        const res = await fetch(`${BASE}${path}`);
+        const res = await fetch(path);
         if (!res.ok) return null;
         return res.json() as Promise<T>;
     } catch {
@@ -242,7 +270,7 @@ function MarketBreadthBar({ advances = 1240, declines = 820, unchanged = 140 }: 
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-export default function NSEDashboard() {
+function NSEDashboard() {
     const [indices, setIndices] = useState<IndexData[]>(MOCK_INDICES);
     const [agents, setAgents] = useState<AgentInsight[]>(MOCK_AGENTS);
     const [options, setOptions] = useState<OptionChainRow[]>(MOCK_OPTIONS);
@@ -260,6 +288,7 @@ export default function NSEDashboard() {
                 fetchJSON<MarketOverview>("/api/nse/overview"),
                 fetchJSON<any>("/api/autotrade/latest"),
             ]);
+            // Note: Vite proxy routes /api/* → http://localhost:5001
 
             if (overview) {
                 setBackendOnline(true);
@@ -493,5 +522,15 @@ export default function NSEDashboard() {
                 )}
         </div>
         </MainLayout>
+    );
+}
+
+// Wrap with error boundary so any runtime crash shows a recoverable UI
+// instead of falling through to the 404 catch-all route.
+export default function NSEDashboardPage() {
+    return (
+        <ErrorBoundary>
+            <NSEDashboard />
+        </ErrorBoundary>
     );
 }
