@@ -228,6 +228,169 @@ class DerivativesCollector:
         """Fetch options chain for individual F&O stock."""
         return await self.collect_options_chain(symbol, is_index=False)
 
+    # ── Derivatives Market Intelligence (OI Spurts, Most Active, etc.) ────────
+
+    async def collect_oi_spurts(self) -> Dict[str, Any]:
+        """
+        OI Spurts — contracts with sudden large change in OI.
+        This is the most critical signal for intraday options traders.
+        Source: https://www.nseindia.com/market-data/oi-spurts
+        """
+        data = await self.nse.get_endpoint("oi_spurts")
+        if not data:
+            return {"oi_spurts": [], "timestamp": datetime.now().isoformat()}
+
+        raw = data.get("data", data) if isinstance(data, dict) else data
+        if not isinstance(raw, list):
+            raw = []
+
+        spurts = []
+        for item in raw[:40]:
+            oi_change = item.get("changeInOI", item.get("change_in_oi", 0))
+            pct_change_oi = item.get("pchangeinOI", item.get("pct_change_oi", 0))
+            ltp = item.get("ltp", item.get("lastPrice", 0))
+            volume = item.get("volume", item.get("totalTradedVolume", 0))
+            prev_oi = item.get("prevOI", item.get("previousOI", 0))
+            curr_oi = item.get("latestOI", item.get("currentOI", prev_oi + oi_change))
+
+            spurts.append({
+                "symbol": item.get("symbol", ""),
+                "ltp": ltp,
+                "prev_close": item.get("previousClose", item.get("prevClose", 0)),
+                "pct_change_price": item.get("pChange", 0),
+                "prev_oi": prev_oi,
+                "curr_oi": curr_oi,
+                "change_oi": oi_change,
+                "pct_change_oi": pct_change_oi,
+                "volume": volume,
+                # Signal: OI up + Price up = Long buildup, OI up + Price down = Short buildup
+                "interpretation": self._oi_interpretation(pct_change_oi, item.get("pChange", 0)),
+            })
+
+        # Sort by absolute % change in OI descending
+        spurts.sort(key=lambda x: abs(x.get("pct_change_oi", 0)), reverse=True)
+
+        return {
+            "oi_spurts": spurts,
+            "count": len(spurts),
+            "timestamp": datetime.now().isoformat(),
+        }
+
+    async def collect_most_active_contracts(self) -> Dict[str, Any]:
+        """
+        Most Active F&O Contracts by value/volume.
+        fo_type: 0 = Futures, 1 = Options (Call+Put)
+        """
+        futures_data = await self.nse.get_endpoint("most_active_contracts", fo_type="0")
+        options_data = await self.nse.get_endpoint("most_active_contracts", fo_type="1")
+
+        def parse_contracts(data, contract_type: str) -> List[Dict]:
+            if not data:
+                return []
+            raw = data.get("data", data) if isinstance(data, dict) else data
+            if not isinstance(raw, list):
+                return []
+            contracts = []
+            for item in raw[:15]:
+                contracts.append({
+                    "contract_type": contract_type,
+                    "symbol": item.get("underlying", item.get("symbol", "")),
+                    "instrument": item.get("instrumentType", item.get("instrument", "")),
+                    "expiry": item.get("expiryDate", item.get("expiry", "")),
+                    "strike": item.get("strikePrice", item.get("strike", 0)),
+                    "option_type": item.get("optionType", ""),
+                    "ltp": item.get("lastPrice", item.get("ltp", 0)),
+                    "pct_change": item.get("pChange", item.get("pctChange", 0)),
+                    "volume": item.get("numberOfContractsTraded", item.get("volume", 0)),
+                    "value": item.get("tradedValue", item.get("value", 0)),
+                    "oi": item.get("openInterest", item.get("oi", 0)),
+                })
+            return contracts
+
+        futures = parse_contracts(futures_data, "futures")
+        options = parse_contracts(options_data, "options")
+
+        return {
+            "futures": futures,
+            "options": options,
+            "timestamp": datetime.now().isoformat(),
+        }
+
+    async def collect_most_active_underlying(self) -> Dict[str, Any]:
+        """
+        Most Active Underlying — stocks/indices with highest F&O activity.
+        Shows aggregate futures+options volume and OI per underlying.
+        """
+        data = await self.nse.get_endpoint("most_active_underlying")
+        if not data:
+            return {"underlyings": [], "timestamp": datetime.now().isoformat()}
+
+        raw = data.get("data", data) if isinstance(data, dict) else data
+        if not isinstance(raw, list):
+            raw = []
+
+        underlyings = []
+        for item in raw[:20]:
+            underlyings.append({
+                "symbol": item.get("underlying", item.get("symbol", "")),
+                "last_price": item.get("lastPrice", item.get("ltp", 0)),
+                "pct_change": item.get("pChange", 0),
+                "total_contracts": item.get("numberOfContractsTraded", item.get("contracts", 0)),
+                "total_value": item.get("tradedValue", item.get("value", 0)),
+                "futures_oi": item.get("futuresOI", item.get("futOI", 0)),
+                "options_oi": item.get("optionsOI", item.get("optOI", 0)),
+            })
+
+        return {
+            "underlyings": underlyings,
+            "count": len(underlyings),
+            "timestamp": datetime.now().isoformat(),
+        }
+
+    async def collect_derivatives_intelligence(self) -> Dict[str, Any]:
+        """
+        Unified endpoint: OI spurts + most active contracts + most active underlying.
+        Single call for the DerivativesIntel page.
+        """
+        oi_spurts_task = self.collect_oi_spurts()
+        active_contracts_task = self.collect_most_active_contracts()
+        active_underlying_task = self.collect_most_active_underlying()
+
+        results = await asyncio.gather(
+            oi_spurts_task, active_contracts_task, active_underlying_task,
+            return_exceptions=True,
+        )
+
+        oi_spurts = results[0] if not isinstance(results[0], Exception) else {"oi_spurts": [], "error": str(results[0])}
+        active_contracts = results[1] if not isinstance(results[1], Exception) else {"futures": [], "options": [], "error": str(results[1])}
+        active_underlying = results[2] if not isinstance(results[2], Exception) else {"underlyings": [], "error": str(results[2])}
+
+        return {
+            "oi_spurts": oi_spurts.get("oi_spurts", []),
+            "most_active_futures": active_contracts.get("futures", []),
+            "most_active_options": active_contracts.get("options", []),
+            "most_active_underlying": active_underlying.get("underlyings", []),
+            "timestamp": datetime.now().isoformat(),
+        }
+
+    @staticmethod
+    def _oi_interpretation(oi_pct_change: float, price_pct_change: float) -> str:
+        """
+        Interpret OI + Price change combination.
+        This is the core logic for understanding market positioning.
+        """
+        oi_up = oi_pct_change > 0
+        price_up = price_pct_change > 0
+
+        if oi_up and price_up:
+            return "long_buildup"      # Bullish — new longs being created
+        elif oi_up and not price_up:
+            return "short_buildup"     # Bearish — new shorts being created
+        elif not oi_up and price_up:
+            return "short_covering"    # Mildly bullish — shorts exiting
+        else:
+            return "long_unwinding"    # Bearish — longs exiting
+
     def _calculate_max_pain(self, chain: List[Dict]) -> Dict[str, Any]:
         """
         Calculate max pain strike from options chain.

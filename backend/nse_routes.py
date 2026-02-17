@@ -235,6 +235,39 @@ async def most_active():
     return await collector.breadth.collect_most_active()
 
 
+# ==================== Derivatives Intelligence ====================
+
+@router.get("/derivatives-intel")
+async def derivatives_intelligence():
+    """
+    Unified derivatives intelligence: OI spurts + most active contracts + underlyings.
+    Single endpoint for the Derivatives Intel page.
+    """
+    collector = _get_collector()
+    return await collector.derivatives.collect_derivatives_intelligence()
+
+
+@router.get("/oi-spurts")
+async def oi_spurts():
+    """OI spurts — contracts with sudden large OI changes (intraday signals)."""
+    collector = _get_collector()
+    return await collector.derivatives.collect_oi_spurts()
+
+
+@router.get("/most-active-contracts")
+async def most_active_contracts():
+    """Most active F&O contracts (futures + options by volume/value)."""
+    collector = _get_collector()
+    return await collector.derivatives.collect_most_active_contracts()
+
+
+@router.get("/most-active-underlying")
+async def most_active_underlying():
+    """Most active underlying stocks/indices in F&O segment."""
+    collector = _get_collector()
+    return await collector.derivatives.collect_most_active_underlying()
+
+
 # ==================== Corporate Actions ====================
 
 @router.get("/bulk-deals")

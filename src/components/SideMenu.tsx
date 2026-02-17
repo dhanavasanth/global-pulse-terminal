@@ -11,6 +11,7 @@ import {
     LogOut,
     Zap,
     IndianRupee,
+    Layers,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -63,6 +64,13 @@ const navItems: NavItem[] = [
         icon: <IndianRupee className="w-5 h-5" />,
         badge: 'NEW',
         badgeColor: 'bg-orange-500/20 text-orange-400',
+    },
+    {
+        path: '/derivatives',
+        label: 'F&O Intel',
+        icon: <Layers className="w-5 h-5" />,
+        badge: 'F&O',
+        badgeColor: 'bg-cyan-500/20 text-cyan-400',
     },
     {
         path: '/autotrade',

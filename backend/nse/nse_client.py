@@ -72,6 +72,11 @@ class NSEClient:
         "advances_declines": "/api/live-analysis-variations?index=gainers",
         "most_active": "/api/live-analysis-most-active-securities?index=volume",
 
+        # Derivatives Market Intelligence
+        "oi_spurts": "/api/live-analysis-oi-spurts",
+        "most_active_contracts": "/api/liveanalysis/most-active-contracts?index={fo_type}",
+        "most_active_underlying": "/api/liveanalysis/most-active-underlying?index=allContracts",
+
         # VIX
         "vix_history": "/api/historical/vixhistory?from={from_date}&to={to_date}",
 
