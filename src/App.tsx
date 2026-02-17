@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AngelOneAuthProvider } from "@/contexts/AngelOneAuthContext";
 import { ThemeProvider } from "@/components/theme-provider";
+import React, { Suspense } from "react";
 import Index from "./pages/Index";
 import OptionsLab from "./pages/OptionsLab";
 import OrderFlow from "./pages/OrderFlow";
@@ -14,7 +15,15 @@ import StockAtlas from "./pages/StockAtlas";
 import Screener from "./pages/Screener";
 import AutoTrade from "./pages/AutoTrade";
 import NSEDashboard from "./pages/NSEDashboard";
-import DerivativesIntel from "./pages/DerivativesIntel";
+
+// Lazy-load to isolate from main bundle — prevents import crash from killing all routes
+const DerivativesIntel = React.lazy(() => import("./pages/DerivativesIntel"));
+
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen bg-[#080a0f] text-zinc-400 text-sm">
+    Loading...
+  </div>
+);
 
 const queryClient = new QueryClient();
 
@@ -35,7 +44,7 @@ const App = () => (
               <Route path="/screener" element={<Screener />} />
               <Route path="/autotrade" element={<AutoTrade />} />
               <Route path="/nse-dashboard" element={<NSEDashboard />} />
-              <Route path="/derivatives" element={<DerivativesIntel />} />
+              <Route path="/derivatives" element={<Suspense fallback={<PageLoader />}><DerivativesIntel /></Suspense>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
