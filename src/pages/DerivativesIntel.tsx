@@ -86,20 +86,28 @@ async function fetchJSON<T>(path: string): Promise<T | null> {
 
 // ─── Formatting helpers ───────────────────────────────────────────────────────
 
-function pct(val: number) {
-    const sign = val >= 0 ? "+" : "";
-    return `${sign}${val.toFixed(2)}%`;
+function pct(val: number | undefined | null) {
+    const v = Number(val) || 0;
+    const sign = v >= 0 ? "+" : "";
+    return `${sign}${v.toFixed(2)}%`;
 }
 
-function color(val: number) {
-    return val >= 0 ? "text-emerald-400" : "text-rose-400";
+function color(val: number | undefined | null) {
+    return (Number(val) || 0) >= 0 ? "text-emerald-400" : "text-rose-400";
 }
 
-function num(val: number) {
-    if (val >= 10000000) return (val / 10000000).toFixed(1) + "Cr";
-    if (val >= 100000) return (val / 100000).toFixed(1) + "L";
-    if (val >= 1000) return (val / 1000).toFixed(1) + "K";
-    return val.toLocaleString("en-IN");
+function num(val: number | undefined | null) {
+    const v = Number(val) || 0;
+    const abs = Math.abs(v);
+    const sign = v < 0 ? "-" : "";
+    if (abs >= 10000000) return sign + (abs / 10000000).toFixed(1) + "Cr";
+    if (abs >= 100000) return sign + (abs / 100000).toFixed(1) + "L";
+    if (abs >= 1000) return sign + (abs / 1000).toFixed(1) + "K";
+    return v.toLocaleString("en-IN");
+}
+
+function safe(val: number | undefined | null, decimals = 2): string {
+    return (Number(val) || 0).toFixed(decimals);
 }
 
 const INTERPRETATION_MAP: Record<string, { label: string; color: string; icon: "up" | "down" }> = {
@@ -278,8 +286,10 @@ function DerivativesIntel() {
     const shortCovers = oiSpurts.filter(s => s.interpretation === "short_covering").length;
     const longUnwinds = oiSpurts.filter(s => s.interpretation === "long_unwinding").length;
 
-    const pcrColor = chainSummary.pcr.oi > 1.2 ? "text-rose-400" : chainSummary.pcr.oi < 0.7 ? "text-emerald-400" : "text-amber-400";
-    const ivColor = chainSummary.iv_data.atm_iv_avg > 18 ? "text-rose-400" : chainSummary.iv_data.atm_iv_avg > 14 ? "text-amber-400" : "text-emerald-400";
+    const pcrOi = chainSummary?.pcr?.oi ?? 0;
+    const atmIv = chainSummary?.iv_data?.atm_iv_avg ?? 0;
+    const pcrColor = pcrOi > 1.2 ? "text-rose-400" : pcrOi < 0.7 ? "text-emerald-400" : "text-amber-400";
+    const ivColor = atmIv > 18 ? "text-rose-400" : atmIv > 14 ? "text-amber-400" : "text-emerald-400";
 
     // ── Header ──
     const pageHeader = (
@@ -321,11 +331,11 @@ function DerivativesIntel() {
 
                 {/* ── Row 1: Key Metrics ── */}
                 <div className="grid grid-cols-6 gap-3">
-                    <StatCard label="NIFTY Spot" value={chainSummary.spot_price.toLocaleString("en-IN")} sub={`ATM ${chainSummary.atm_strike}`} />
-                    <StatCard label="PCR (OI)" value={chainSummary.pcr.oi.toFixed(2)} sub={chainSummary.pcr.signal} accent={pcrColor} />
-                    <StatCard label="ATM IV" value={chainSummary.iv_data.atm_iv_avg.toFixed(1) + "%"} sub={`Skew: ${chainSummary.iv_data.iv_skew.toFixed(1)}`} accent={ivColor} />
-                    <StatCard label="Max Pain" value={chainSummary.max_pain.strike.toLocaleString("en-IN")} sub={`Expiry: ${chainSummary.current_expiry}`} />
-                    <StatCard label="Straddle" value={"₹" + chainSummary.straddle_premium.toFixed(0)} sub="ATM CE+PE premium" />
+                    <StatCard label="NIFTY Spot" value={(chainSummary?.spot_price ?? 0).toLocaleString("en-IN")} sub={`ATM ${chainSummary?.atm_strike ?? "—"}`} />
+                    <StatCard label="PCR (OI)" value={safe(pcrOi)} sub={chainSummary?.pcr?.signal ?? "—"} accent={pcrColor} />
+                    <StatCard label="ATM IV" value={safe(atmIv, 1) + "%"} sub={`Skew: ${safe(chainSummary?.iv_data?.iv_skew, 1)}`} accent={ivColor} />
+                    <StatCard label="Max Pain" value={(chainSummary?.max_pain?.strike ?? 0).toLocaleString("en-IN")} sub={`Expiry: ${chainSummary?.current_expiry ?? "—"}`} />
+                    <StatCard label="Straddle" value={"₹" + safe(chainSummary?.straddle_premium, 0)} sub="ATM CE+PE premium" />
                     <div className="rounded-xl border border-white/10 bg-white/5 p-3">
                         <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">OI Sentiment</p>
                         <div className="flex gap-1 mt-1">
@@ -555,15 +565,15 @@ function DerivativesIntel() {
                         </div>
                         <div>
                             <p className="text-zinc-500 text-[10px] mb-1">NIFTY Options</p>
-                            <p>PCR: <span className={`font-mono font-medium ${pcrColor}`}>{chainSummary.pcr.oi.toFixed(2)}</span></p>
-                            <p>Max Pain: <span className="font-mono font-medium text-white">{chainSummary.max_pain.strike}</span></p>
-                            <p>ATM Straddle: <span className="font-mono font-medium text-white">₹{chainSummary.straddle_premium.toFixed(0)}</span></p>
+                            <p>PCR: <span className={`font-mono font-medium ${pcrColor}`}>{safe(pcrOi)}</span></p>
+                            <p>Max Pain: <span className="font-mono font-medium text-white">{chainSummary?.max_pain?.strike ?? "—"}</span></p>
+                            <p>ATM Straddle: <span className="font-mono font-medium text-white">₹{safe(chainSummary?.straddle_premium, 0)}</span></p>
                         </div>
                         <div>
                             <p className="text-zinc-500 text-[10px] mb-1">Volatility</p>
-                            <p>ATM IV: <span className={`font-mono font-medium ${ivColor}`}>{chainSummary.iv_data.atm_iv_avg.toFixed(1)}%</span></p>
-                            <p>IV Skew: <span className="font-mono font-medium text-white">{chainSummary.iv_data.iv_skew.toFixed(1)}</span></p>
-                            <p>Skew: <span className="font-mono font-medium text-zinc-300">{chainSummary.iv_data.skew_signal}</span></p>
+                            <p>ATM IV: <span className={`font-mono font-medium ${ivColor}`}>{safe(atmIv, 1)}%</span></p>
+                            <p>IV Skew: <span className="font-mono font-medium text-white">{safe(chainSummary?.iv_data?.iv_skew, 1)}</span></p>
+                            <p>Skew: <span className="font-mono font-medium text-zinc-300">{chainSummary?.iv_data?.skew_signal ?? "—"}</span></p>
                         </div>
                         <div>
                             <p className="text-zinc-500 text-[10px] mb-1">Top Signals</p>
