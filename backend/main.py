@@ -1,6 +1,7 @@
 """
-Crypto Orderflow Analytics Backend
-High-performance WebSocket server for real-time market data streaming
+Global Pulse Terminal - Market Analytics Backend
+Bloomberg-style AI-powered trading terminal for Indian & global markets.
+High-performance WebSocket server with comprehensive NSE data collection.
 """
 
 # Load .env before any other imports so ANGELONE_* vars are available
@@ -22,6 +23,11 @@ import pyth_service
 
 # Import AutoTrade orchestrator
 from autotrade.orchestrator import AutoTradeOrchestrator
+
+# Import NSE data infrastructure
+from nse.master_collector import NSEMasterCollector
+from nse.agent_manager import MarketAgentManager
+import nse_routes
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -52,6 +58,11 @@ class AppState:
 state = AppState()
 autotrade_orchestrator = AutoTradeOrchestrator()
 autotrade_ws_connections: Set[WebSocket] = set()
+
+# NSE Bloomberg-style data infrastructure
+nse_collector = NSEMasterCollector()
+agent_manager = MarketAgentManager()
+nse_routes.init_nse_services(nse_collector, agent_manager)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
